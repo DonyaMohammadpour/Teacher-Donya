@@ -16,7 +16,16 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "CHANGE-ME-before-deployment")
+secret_key = os.environ.get("SECRET_KEY")
+if not secret_key:
+    if os.environ.get("RENDER"):
+        raise RuntimeError("SECRET_KEY must be configured in the hosting environment.")
+    secret_key = "local-development-only-change-before-deployment"
+app.config["SECRET_KEY"] = secret_key
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+if os.environ.get("RENDER"):
+    app.config["SESSION_COOKIE_SECURE"] = True
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///teacher_donya_v2.db")
 if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
     app.config["SQLALCHEMY_DATABASE_URI"] = app.config["SQLALCHEMY_DATABASE_URI"].replace("postgres://", "postgresql://", 1)
@@ -328,21 +337,9 @@ def index():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == "POST":
-        username = request.form.get("username", "").strip().lower()
-        name = request.form.get("name", "").strip()
-        password = request.form.get("password", "")
-        if not username or not name or len(password) < 8:
-            flash("نام، نام کاربری و رمز حداقل ۸ کاراکتری لازم است.")
-        elif User.query.filter_by(username=username).first():
-            flash("این نام کاربری قبلاً ثبت شده است.")
-        else:
-            u = User(username=username, display_name=name, role="teacher")
-            u.set_password(password)
-            db.session.add(u); db.session.commit()
-            login_user(u)
-            return redirect(url_for("dashboard"))
-    return render_template("register.html")
+    # Teacher accounts are provisioned privately; public sign-up is disabled.
+    flash("ساخت حساب مدرس از طریق ثبت‌نام عمومی غیرفعال است.")
+    return redirect(url_for("login"))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
