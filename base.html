@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Teacher Donya{% endblock %}</title><link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}"></head>
+<body><header class="topbar"><a class="brand" href="{{ url_for('index') }}">Teacher Donya</a>
+{% if current_user.is_authenticated %}<nav><span>{{ current_user.display_name }}</span>{% if current_user.role=='teacher' %}<a href="{{ url_for('dashboard') }}">داشبورد</a><a href="{{ url_for('calendar_view') }}">تقویم</a>{% else %}<a href="{{ url_for('student_home') }}">پنل من</a>{% endif %}<a href="{{ url_for('logout') }}">خروج</a></nav>{% endif %}</header>
+<main class="container">{% with msgs=get_flashed_messages() %}{% if msgs %}<div class="flash">{% for m in msgs %}<p>{{m}}</p>{% endfor %}</div>{% endif %}{% endwith %}{% block content %}{% endblock %}</main>
+<footer>Teacher Donya · مدیریت کلاس‌های خصوصی زبان</footer></body></html>

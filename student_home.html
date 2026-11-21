@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+<p class="eyebrow">پنل زبان‌آموز</p>
+<h1>سلام {{current_user.display_name}}</h1>
+<div class="status-list">
+  {% if finance.completed > 0 and finance.sessions_remaining <= 0 %}
+    <p class="status-warning">اعتبار جلسات شما تمام شده است.</p>
+  {% endif %}
+  {% if finance.balance > 0 %}
+    <p class="status-danger">وضعیت حساب: بدهکار · مبلغ بدهی {{ "{:,}".format(finance.balance) }} تومان</p>
+  {% elif finance.completed > 0 and finance.sessions_remaining > 0 %}
+    <p class="status-ok">وضعیت پرداخت شما تسویه است.</p>
+  {% endif %}
+</div>
+<p>سطح: {{profile.level or '—'}} · برنامه: {{profile.schedule_note or '—'}}</p>
+</section>
+<section class="card"><h2>ثبت درخواست پرداخت</h2><p class="muted">پرداخت پس از بررسی و تأیید مدرس در حساب شما ثبت می‌شود.</p><form method="post" action="{{url_for('student_payment_request')}}" class="form-grid"><label>تاریخ پرداخت شمسی<input name="payment_date" placeholder="1405/09/01" required></label><label>مبلغ (تومان)<input type="number" name="amount" min="1" required></label><label>روش پرداخت<select name="method"><option>کارت‌به‌کارت</option><option>نقدی</option><option>انتقال بانکی</option></select></label><label>شماره پیگیری یا توضیحات<input name="description"></label><div class="wide"><button>ارسال برای تأیید</button></div></form></section>
+<section class="card"><h2>جلسات من</h2>{% for l in lessons %}<div class="row"><span>{{jdate(l.lesson_date)}} · {{l.start_time}}</span><span>{{l.topic or '—'}} · {{l.status}}</span><span>{{l.homework or ''}}</span></div>{% else %}<p class="muted">جلسه‌ای ثبت نشده است.</p>{% endfor %}</section>
+<section class="card"><h2>پرداخت‌های من</h2>{% for p in payments %}<div class="row"><span>{{jdate(p.payment_date)}} · {{"{:,}".format(p.amount)}} تومان</span><span>{{p.status}} · {{p.description}}</span></div>{% else %}<p class="muted">پرداختی ثبت نشده است.</p>{% endfor %}</section>
+{% endblock %}
